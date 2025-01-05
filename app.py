@@ -1,54 +1,53 @@
-# Server (app.py)
 from flask import Flask, send_file, request, jsonify
 import requests
 import io
+import os
 import validators
 
 app = Flask(__name__)
 
-@app.route('/download-gif', methods=['GET'])
+
+@app.route("/download-gif", methods=["GET"])
 def download_gif():
     # Get the GIF URL from query parameters
-    gif_url = request.args.get('url')
-    
+    gif_url = request.args.get("url")
+
     # Validate URL
     if not gif_url or not validators.url(gif_url):
-        return jsonify({'error': 'Invalid URL provided'}), 400
-    
+        return jsonify({"error": "Invalid URL provided"}), 400
+
     try:
         # Download the GIF
         response = requests.get(gif_url)
         response.raise_for_status()  # Raise an exception for bad status codes
-        
+
         # Verify content type is actually a GIF
-        content_type = response.headers.get('content-type', '')
-        if 'gif' not in content_type.lower():
-            return jsonify({'error': 'URL does not point to a GIF image'}), 400
-        
+        content_type = response.headers.get("content-type", "")
+        if "gif" not in content_type.lower():
+            return jsonify({"error": "URL does not point to a GIF image"}), 400
+
         # Create in-memory file
         gif_data = io.BytesIO(response.content)
         gif_data.seek(0)
-        
+
         # Generate filename from URL
-        filename = gif_url.split('/')[-1]
-        if not filename.endswith('.gif'):
-            filename = 'downloaded.gif'
-        
+        filename = gif_url.split("/")[-1]
+        if not filename.endswith(".gif"):
+            filename = "downloaded.gif"
+
         # Send file to user's browser which will trigger their download dialog
         return send_file(
-            gif_data,
-            mimetype='image/gif',
-            as_attachment=True,
-            download_name=filename
+            gif_data, mimetype="image/gif", as_attachment=True, download_name=filename
         )
-    
+
     except requests.RequestException as e:
-        return jsonify({'error': f'Failed to download GIF: {str(e)}'}), 500
+        return jsonify({"error": f"Failed to download GIF: {str(e)}"}), 500
+
 
 # Simple HTML interface
-@app.route('/')
+@app.route("/")
 def home():
-    return '''
+    return """
     <!DOCTYPE html>
     <html>
     <head>
@@ -109,8 +108,9 @@ def home():
         </script>
     </body>
     </html>
-    '''
+    """
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
