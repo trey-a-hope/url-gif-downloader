@@ -1,3 +1,4 @@
-flask==2.0.1
-requests==2.26.0
-validators==0.18.2
+Flask==2.0.1
+Werkzeug==2.0.3
+requests==2.31.0
+validators==0.22.0
